@@ -30,6 +30,10 @@ func compileName(filename string, remove int) string {
 	switch {
 	case 1 <= remove && remove <= 3:
 		secondstring := strings.Split(rawstring[2], "-")
+		if len(secondstring) < 4 {
+			fmt.Printf("Wrong samplename format : %s.\n\tIt should be look like :SXXX_XXB_CHGXXXXXX-LIBNAME-SAMPLENAME-BARCODE_L00X_RX.fastq.gz\n", filename)
+			return filename
+		}
 		if strings.Contains(secondstring[0], "CHG") {
 			secondstring = RemoveFromArray(secondstring, remove) //remove chg id
 		} else {
@@ -38,6 +42,10 @@ func compileName(filename string, remove int) string {
 		rawstring[2] = strings.Join(secondstring, "-")
 	case remove == 4:
 		secondstring := strings.Split(rawstring[2], "-")
+		if len(secondstring) < 4 {
+			fmt.Printf("Wrong samplename format : %s.\n\tIt should be look like :SXXX_XXB_CHGXXXXXX-LIBNAME-SAMPLENAME-BARCODE_L00X_RX.fastq.gz\n", filename)
+			return filename
+		}
 		if strings.Contains(secondstring[0], "CHG") {
 			secondstring = RemoveFromArray(secondstring, len(secondstring)) //remove barcode
 		} else {
@@ -56,6 +64,9 @@ func ReName(filename []string, remove int) {
 	for _, rawname := range filename {
 		fmt.Println(rawname)
 		newname := compileName(rawname, remove)
+		if rawname == newname {
+			continue
+		}
 		os.Rename(rawname, newname)
 		fmt.Println(">renaming ", rawname, " to ", newname, "\t...")
 	}
