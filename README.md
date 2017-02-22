@@ -18,7 +18,18 @@ So `RenameCHGenomicsFilename` is created.`RenameCHGenomicsFilename` is a `golang
 ###Usage
 `RenameCHGenomicsFilename` can be run in both windows/linux OS, or anyother platforms which `golang` support.
 
-run the app from source code:
+##### Download
+```git clone https://github.com/snailQH/RenameCHGenomicsFilename.git && cd RenameCHGenomicsFilename```
+
+##### run the app from source code:
 <pre><code>go run main.go -dir /online/projects/C170001-P001 -marker 5 //remove the LaneId from filename[/online/projects/C170001-P001]
+</code></pre>
+
+##### run the app in linux os:
+<pre><code>./RenameCHGenomicsFilename -dir /online/projects/C170001-P001 -marker 5 //remove the LaneId from filename[/online/projects/C170001-P001]
+</code></pre>
+
+##### run the app in windows os:
+<pre><code>RenameCHGenomicsFilename.exe -dir D:\\C170001-P001 -marker 5 //remove the LaneId from filename[D:\\C170001-P001]
 </code></pre>
 
