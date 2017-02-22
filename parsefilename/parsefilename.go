@@ -28,10 +28,18 @@ func compileName(filename string, remove int) string {
 
 	//remove chgid/libname/rawname/barcod/laneid[1/2/3/4/5]
 	switch {
-	case 1 <= remove && remove <= 4:
+	case 1 <= remove && remove <= 3:
 		secondstring := strings.Split(rawstring[2], "-")
 		if strings.Contains(secondstring[0], "CHG") {
 			secondstring = RemoveFromArray(secondstring, remove) //remove chg id
+		} else {
+			fmt.Printf("Wrong samplename: NO CHG ID IN THE RAW SAMPLENAME %s !\n", filename)
+		}
+		rawstring[2] = strings.Join(secondstring, "-")
+	case remove == 4:
+		secondstring := strings.Split(rawstring[2], "-")
+		if strings.Contains(secondstring[0], "CHG") {
+			secondstring = RemoveFromArray(secondstring, len(secondstring)) //remove barcode
 		} else {
 			fmt.Printf("Wrong samplename: NO CHG ID IN THE RAW SAMPLENAME %s !\n", filename)
 		}
