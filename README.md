@@ -16,6 +16,13 @@ So `RenameCHGenomicsFilename` is created.`RenameCHGenomicsFilename` is a `golang
 
 ###Usage
 `RenameCHGenomicsFilename` can be run in both windows/linux OS, or anyother platforms which `golang` support.
+```-dir``` : set the directory of the fastq files
+```-marker``` : specify the element you want to remove from the filename
+&#8195;&#8195;&#8195;&#8195;1: remove CHGID
+&#8195;&#8195;&#8195;&#8195;2: remove LibName
+&#8195;&#8195;&#8195;&#8195;3: remove SampleName
+&#8195;&#8195;&#8195;&#8195;4: remove Barcode
+&#8195;&#8195;&#8195;&#8195;5: remove LaneId"
 
 ##### Download
 ```git clone https://github.com/snailQH/RenameCHGenomicsFilename.git && cd RenameCHGenomicsFilename```
