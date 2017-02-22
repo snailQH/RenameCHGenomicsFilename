@@ -57,7 +57,7 @@ func ReName(filename []string, remove int) {
 		fmt.Println(rawname)
 		newname := compileName(rawname, remove)
 		os.Rename(rawname, newname)
-		//fmt.Println(">rename ", rawname, "to", newname)
+		fmt.Println(">renaming ", rawname, " to ", newname, "\t...")
 	}
 }
 
