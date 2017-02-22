@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"./ParseFilename"
+	"./parsefilename"
 )
 
 var marker int
@@ -24,6 +24,6 @@ func main() {
 		//flag.PrintDefaults()
 	}
 	flag.Parse()
-	filelist := ParseFilename.ListFile(dir)
-	ParseFilename.ReName(filelist, marker)
+	filelist := parsefilename.ListFile(dir)
+	parsefilename.ReName(filelist, marker)
 }

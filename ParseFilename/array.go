@@ -1,14 +1,4 @@
-package ParseFilename
-
-//MergeArray is designed for merge two string array
-func MergeArray(a []string, b []string) []string {
-	var newarray []string
-	newarray = a
-	for _, item := range b {
-		newarray = append(newarray, item)
-	}
-	return newarray
-}
+package parsefilename
 
 //RemoveFromArray is designed for remove one item from a string array
 func RemoveFromArray(array []string, index int) []string {

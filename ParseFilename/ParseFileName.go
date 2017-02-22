@@ -1,4 +1,4 @@
-package ParseFilename
+package parsefilename
 
 import (
 	"fmt"
@@ -60,7 +60,7 @@ func ListFile(folder string) []string {
 	for _, file := range files {
 		if file.IsDir() {
 			newdir := path.Join(folder, file.Name())
-			filelist = MergeArray(filelist, ListFile(newdir))
+			filelist = append(filelist, ListFile(newdir)...)
 		} else {
 			if strings.Contains(file.Name(), "Undetermined") {
 				continue
