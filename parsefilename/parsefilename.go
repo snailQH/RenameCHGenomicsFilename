@@ -23,7 +23,7 @@ func compileName(filename string, remove int) string {
 
 	if len(rawstring) != 5 {
 		fmt.Printf("Wrong samplename format : %s.\n\tIt should be look like :SXXX_XXB_CHGXXXXXX-LIBNAME-SAMPLENAME-BARCODE_L00X_RX.fastq.gz\n", filename)
-		return ""
+		return filename
 	}
 
 	//remove chgid/libname/rawname/barcod/laneid[1/2/3/4/5]
