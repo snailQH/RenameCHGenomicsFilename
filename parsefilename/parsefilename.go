@@ -1,29 +1,21 @@
 package parsefilename
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 )
 
-/**
-SXXX_XXB_CHG000000-LIBNAME-SAMPLENAME-CCGGTTAA_L00X_R1.fastq.gz
-SXXX_XXB_CHG000000-LIBNAME-SAMPLENAME-CCGGTTAA_L00X_R2.fastq.gz
-SXXX_XXA_Undetermined_L00X_R1.fastq.gz;
-SXXX_XXA_Undetermined_L00X_R2.fastq.gz
-*/
-
-func compileName(filename string, remove int) string {
+func compileName(filename string, remove int, logs string) (string, string) {
 	var result string
 	dir := path.Dir(filename)
 	name := path.Base(filename)
-	rawstring := strings.Split(name, "_") //namestring[0,1,2,3]SXXX _ XXB _ CHG000000-LIBNAME-SAMPLENAME-CCGGTTAA _ L00X _ R1.fastq.gz
+	rawstring := strings.Split(name, "_") //rawstring[0,1,2,3]SXXX _ XXB _ CHG000000-LIBNAME-SAMPLENAME-CCGGTTAA _ L00X _ R1.fastq.gz
 
 	if len(rawstring) != 5 {
-		fmt.Printf("Wrong samplename format : %s.\n\tIt should be look like :SXXX_XXB_CHGXXXXXX-LIBNAME-SAMPLENAME-BARCODE_L00X_RX.fastq.gz\n", filename)
-		return filename
+		logs = logs + "#Wrong samplename format :" + filename + "\n"
+		return filename, logs
 	}
 
 	//remove chgid/libname/rawname/barcod/laneid[1/2/3/4/5]
@@ -31,45 +23,68 @@ func compileName(filename string, remove int) string {
 	case 1 <= remove && remove <= 3:
 		secondstring := strings.Split(rawstring[2], "-")
 		if len(secondstring) < 4 {
-			fmt.Printf("Wrong samplename format : %s.\n\tIt should be look like :SXXX_XXB_CHGXXXXXX-LIBNAME-SAMPLENAME-BARCODE_L00X_RX.fastq.gz\n", filename)
-			return filename
+			logs = logs + "#Wrong samplename format :" + filename + "\n"
+			return filename, logs
 		}
 		if strings.Contains(secondstring[0], "CHG") {
 			secondstring = RemoveFromArray(secondstring, remove) //remove chg id
 		} else {
-			fmt.Printf("Wrong samplename: NO CHG ID IN THE RAW SAMPLENAME %s !\n", filename)
+			logs = logs + "#Wrong samplename: NO CHG ID IN THE RAW SAMPLENAME :" + filename + "\n"
 		}
 		rawstring[2] = strings.Join(secondstring, "-")
 	case remove == 4:
 		secondstring := strings.Split(rawstring[2], "-")
 		if len(secondstring) < 4 {
-			fmt.Printf("Wrong samplename format : %s.\n\tIt should be look like :SXXX_XXB_CHGXXXXXX-LIBNAME-SAMPLENAME-BARCODE_L00X_RX.fastq.gz\n", filename)
-			return filename
+			logs = logs + "#Wrong samplename format :" + filename + "\n"
+			return filename, logs
 		}
 		if strings.Contains(secondstring[0], "CHG") {
 			secondstring = RemoveFromArray(secondstring, len(secondstring)) //remove barcode
 		} else {
-			fmt.Printf("Wrong samplename: NO CHG ID IN THE RAW SAMPLENAME %s !\n", filename)
+			logs = logs + "#Wrong samplename: NO CHG ID IN THE RAW SAMPLENAME :" + filename + "\n"
 		}
 		rawstring[2] = strings.Join(secondstring, "-")
 	case remove == 5:
 		rawstring = RemoveFromArray(rawstring, 4)
 	}
 	result = path.Join(dir, strings.Join(rawstring, "_"))
-	return result
+	return result, logs
+}
+
+func writeLogs(logs string, logsfile string) {
+	fo, _ := os.Create(logsfile)
+	defer fo.Close()
+	fo.WriteString(logs)
 }
 
 //ReName is design for compile the fastq filename
 func ReName(filename []string, remove int) {
+	checkfile := make(map[string]string)
+	var logs string
+	logsfile := "RenameCHGenomicsFilename.logs"
+
 	for _, rawname := range filename {
-		fmt.Println(rawname)
-		newname := compileName(rawname, remove)
-		if rawname == newname {
+		newname, logs := compileName(rawname, remove, logs)
+		checkfile[rawname] = newname
+		logs = logs + ""
+	}
+
+	for raw, new := range checkfile {
+		if raw == new {
+			logs = logs + "#Wrong format file\n"
+			continue
+		} else if checkfile[new] != "" {
+			logs = logs + "#Duplicate filename in renaming " + raw + "\n"
+			continue
+		} else if checkfile[raw] == "renamed" {
+			logs = logs + "#Duplicate filename in renaming " + raw + "\n"
 			continue
 		}
-		os.Rename(rawname, newname)
-		fmt.Println(">renaming ", rawname, " to ", newname, "\t...")
+		logs = logs + ">#renaming " + raw + " > " + new + " ...\n"
+		os.Rename(raw, new)
+		checkfile[new] = "renamed"
 	}
+	writeLogs(logs, logsfile)
 }
 
 //ListFile is designed for list file in the dir
@@ -83,9 +98,10 @@ func ListFile(folder string) []string {
 		} else {
 			if strings.Contains(file.Name(), "Undetermined") {
 				continue
+			} else if strings.Contains(file.Name(), "fastq.gz") {
+				x := path.Join(folder, file.Name())
+				filelist = append(filelist, x)
 			}
-			x := path.Join(folder, file.Name())
-			filelist = append(filelist, x)
 		}
 	}
 	return filelist
