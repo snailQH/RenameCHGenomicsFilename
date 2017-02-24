@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 )
 
 func compileName(filename string, remove int, logs string) (string, string) {
@@ -14,7 +15,7 @@ func compileName(filename string, remove int, logs string) (string, string) {
 	rawstring := strings.Split(name, "_") //rawstring[0,1,2,3]SXXX _ XXB _ CHG000000-LIBNAME-SAMPLENAME-CCGGTTAA _ L00X _ R1.fastq.gz
 
 	if len(rawstring) != 5 {
-		logs = logs + "#Wrong samplename format :" + filename + "\n"
+		logs = logs + "#Wrong samplename format: " + filename + "\n"
 		return filename, logs
 	}
 
@@ -23,25 +24,25 @@ func compileName(filename string, remove int, logs string) (string, string) {
 	case 1 <= remove && remove <= 3:
 		secondstring := strings.Split(rawstring[2], "-")
 		if len(secondstring) < 4 {
-			logs = logs + "#Wrong samplename format :" + filename + "\n"
+			logs = logs + "#Wrong samplename format: " + filename + "\n"
 			return filename, logs
 		}
 		if strings.Contains(secondstring[0], "CHG") {
 			secondstring = RemoveFromArray(secondstring, remove) //remove chg id
 		} else {
-			logs = logs + "#Wrong samplename: NO CHG ID IN THE RAW SAMPLENAME :" + filename + "\n"
+			logs = logs + "#Wrong samplename: NO CHG ID IN THE RAW SAMPLENAME: " + filename + " \n"
 		}
 		rawstring[2] = strings.Join(secondstring, "-")
 	case remove == 4:
 		secondstring := strings.Split(rawstring[2], "-")
 		if len(secondstring) < 4 {
-			logs = logs + "#Wrong samplename format :" + filename + "\n"
+			logs = logs + "#Wrong samplename format: " + filename + "\n"
 			return filename, logs
 		}
 		if strings.Contains(secondstring[0], "CHG") {
 			secondstring = RemoveFromArray(secondstring, len(secondstring)) //remove barcode
 		} else {
-			logs = logs + "#Wrong samplename: NO CHG ID IN THE RAW SAMPLENAME :" + filename + "\n"
+			logs = logs + "#Wrong samplename: NO CHG ID IN THE RAW SAMPLENAME: " + filename + " \n"
 		}
 		rawstring[2] = strings.Join(secondstring, "-")
 	case remove == 5:
@@ -57,11 +58,24 @@ func writeLogs(logs string, logsfile string) {
 	fo.WriteString(logs)
 }
 
+func getTime(logs string, logsfile string) (string, string) {
+	timestamp := time.Now().Unix()
+	tm := time.Unix(timestamp, 0)
+	x := tm.Format("2006-01-02  Mon 03:04:05 PM MST")
+	logs = x + "\n\n"
+	x = tm.Format("2006-01-02 03:04:05")
+	x = strings.Replace(x, " ", "", -1)
+	x = strings.Replace(x, ":", "", -1)
+	x = strings.Replace(x, "-", "", -1)
+	logsfile = "RenameCHGenomicsFilename-" + x + ".log"
+	return logs, logsfile
+}
+
 //ReName is design for compile the fastq filename
 func ReName(filename []string, remove int) {
 	checkfile := make(map[string]string)
-	var logs string
-	logsfile := "RenameCHGenomicsFilename.logs"
+	var logs, logsfile string
+	logs, logsfile = getTime(logs, logsfile)
 
 	for _, rawname := range filename {
 		newname, logs := compileName(rawname, remove, logs)
@@ -71,13 +85,13 @@ func ReName(filename []string, remove int) {
 
 	for raw, new := range checkfile {
 		if raw == new {
-			logs = logs + "#Wrong format file\n"
+			logs = logs + "#Wrong format file: " + raw + "\n"
 			continue
 		} else if checkfile[new] != "" {
-			logs = logs + "#Duplicate filename in renaming " + raw + "\n"
+			logs = logs + "#Duplicate filename in renaming: " + raw + "\n"
 			continue
 		} else if checkfile[raw] == "renamed" {
-			logs = logs + "#Duplicate filename in renaming " + raw + "\n"
+			logs = logs + "#Duplicate filename in renaming: " + raw + "\n"
 			continue
 		}
 		logs = logs + ">#renaming " + raw + " > " + new + " ...\n"
