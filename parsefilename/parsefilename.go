@@ -47,6 +47,14 @@ func compileName(filename string, remove int, logs string) (string, string) {
 		rawstring[2] = strings.Join(secondstring, "-")
 	case remove == 5:
 		rawstring = RemoveFromArray(rawstring, 4)
+
+	case remove == 0:
+		//remove all cloudhealth genomics sampleinfo
+		secondstring := strings.Split(rawstring[2], "-")
+		newstring := secondstring[1:(len(secondstring) - 1)] //remove CHG ID and barcode info
+		new := strings.Join(newstring, "-")
+		result := new + "_" + rawstring[3] + "_" + rawstring[4]
+		return result, logs
 	}
 	result = path.Join(dir, strings.Join(rawstring, "_"))
 	return result, logs

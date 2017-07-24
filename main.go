@@ -19,7 +19,7 @@ func main() {
 	flag.Usage = func() {
 		fmt.Println("\nUsage of RenameCHGenomicsFilename:")
 		fmt.Println("\nParameters:")
-		fmt.Println("\n-marker :the region you want to remove from the samplenames[default:\"4\"]\n\t1: remove CHGID\n\t2: remove LibName\n\t3: remove SampleName\n\t4: remove Barcode\n\t5: remove LaneId")
+		fmt.Println("\n-marker :the region you want to remove from the samplenames[default:\"4\"]\n\t0: remove RunId,flowcellID,CHGID,Barcode\n\t1: remove CHGID\n\t2: remove LibName\n\t3: remove SampleName\n\t4: remove Barcode\n\t5: remove LaneId")
 		fmt.Printf("\n-dir :directory of the fastq files. eg: /online/projects/C150001-P001 [default:\"./\",for linux OS]\n\n")
 		//flag.PrintDefaults()
 	}
