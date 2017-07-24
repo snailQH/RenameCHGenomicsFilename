@@ -11,7 +11,7 @@ var marker int
 var dir string
 
 func init() {
-	flag.IntVar(&marker, "marker", 4, "specify a marker to remove from filename[1/2/3/4/5]:chg id/original lib name/original samplename/barcode/lane id")
+	flag.IntVar(&marker, "marker", 4, "specify a marker to remove from filename[0/1/2/3/4/5]:chg id/original lib name/original samplename/barcode/lane id")
 	flag.StringVar(&dir, "dir", "./", "specify a (relative/abs) path to fastq files")
 }
 
