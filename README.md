@@ -21,6 +21,7 @@ So `RenameCHGenomicsFilename` is created.`RenameCHGenomicsFilename` is a `golang
 
 ```-marker``` : specify the element you want to remove from the filename
 
+&#8195;&#8195;&#8195;&#8195;0: remove RunID, flowcellID, CHGID, and barcode Info
 &#8195;&#8195;&#8195;&#8195;1: remove CHGID
 &#8195;&#8195;&#8195;&#8195;2: remove LibName
 &#8195;&#8195;&#8195;&#8195;3: remove SampleName
@@ -45,7 +46,7 @@ So `RenameCHGenomicsFilename` is created.`RenameCHGenomicsFilename` is a `golang
 ##### 4. run the app directly:
 In this way, you can remove the barcode from all the `*.fastq.gz`files in the current and sub directory.
 <pre><code>RenameCHGenomicsFilename.exe	//in windows os
-./RenameCHGenomicsFilename.exe	//in linux os
+./RenameCHGenomicsFilename	//in linux os
 </code></pre>
 
 
