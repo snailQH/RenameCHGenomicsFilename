@@ -54,6 +54,7 @@ func compileName(filename string, remove int, logs string) (string, string) {
 		newstring := secondstring[1:(len(secondstring) - 1)] //remove CHG ID and barcode info
 		new := strings.Join(newstring, "-")
 		result := new + "_" + rawstring[3] + "_" + rawstring[4]
+		result = path.Join(dir, strings.Join(rawstring, "_")) //rename the file in the original dir
 		return result, logs
 	}
 	result = path.Join(dir, strings.Join(rawstring, "_"))

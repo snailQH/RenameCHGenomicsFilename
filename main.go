@@ -17,6 +17,7 @@ func init() {
 
 func main() {
 	flag.Usage = func() {
+		flag.PrintDefaults()
 		fmt.Println("\nUsage of RenameCHGenomicsFilename:")
 		fmt.Println("\nParameters:")
 		fmt.Println("\n-marker :the region you want to remove from the samplenames[default:\"4\"]\n\t0: remove RunId,flowcellID,CHGID,Barcode\n\t1: remove CHGID\n\t2: remove LibName\n\t3: remove SampleName\n\t4: remove Barcode\n\t5: remove LaneId")
@@ -24,6 +25,7 @@ func main() {
 		//flag.PrintDefaults()
 	}
 	flag.Parse()
+
 	filelist := parsefilename.ListFile(dir)
 	parsefilename.ReName(filelist, marker)
 }
