@@ -15,7 +15,7 @@ So `RenameCHGenomicsFilename` is created.`RenameCHGenomicsFilename` is a `golang
 
 - - -
 
-###Usage
+### Usage
 `RenameCHGenomicsFilename` can be run in both windows/linux OS, or anyother platforms which `golang` support.
 
 ```-dir``` : set the directory of the fastq files
