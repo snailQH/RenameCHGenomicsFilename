@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -12,7 +13,7 @@ func compileName(filename string, remove int, logs string) (string, string) {
 	var result string
 	dir := path.Dir(filename)
 	name := path.Base(filename)
-	rawstring := strings.Split(name, "_") //rawstring[0,1,2,3]SXXX _ XXB _ CHG000000-LIBNAME-SAMPLENAME-CCGGTTAA _ L00X _ R1.fastq.gz
+	rawstring := strings.Split(name, "_") //rawstring[0,1,2,3,4] SXXX _ XXB _ CHG000000-LIBNAME-SAMPLENAME-CCGGTTAA _ L00X _ R1.fastq.gz
 
 	if len(rawstring) != 5 {
 		logs = logs + "#Wrong samplename format: " + filename + "\n"
@@ -20,13 +21,15 @@ func compileName(filename string, remove int, logs string) (string, string) {
 	}
 
 	//remove chgid/libname/rawname/barcod/laneid[1/2/3/4/5]
+
+	secondstring := strings.Split(rawstring[2], "-") //CHG000000-LIBNAME-SAMPLENAME-CCGGTTAA
+	if len(secondstring) < 4 {
+		logs = logs + "#Wrong samplename format: " + filename + "\n"
+		return filename, logs
+	}
+
 	switch {
 	case 1 <= remove && remove <= 3:
-		secondstring := strings.Split(rawstring[2], "-")
-		if len(secondstring) < 4 {
-			logs = logs + "#Wrong samplename format: " + filename + "\n"
-			return filename, logs
-		}
 		if strings.Contains(secondstring[0], "CHG") {
 			secondstring = RemoveFromArray(secondstring, remove) //remove chg id
 		} else {
@@ -34,31 +37,57 @@ func compileName(filename string, remove int, logs string) (string, string) {
 		}
 		rawstring[2] = strings.Join(secondstring, "-")
 	case remove == 4:
-		secondstring := strings.Split(rawstring[2], "-")
-		if len(secondstring) < 4 {
-			logs = logs + "#Wrong samplename format: " + filename + "\n"
-			return filename, logs
-		}
 		if strings.Contains(secondstring[0], "CHG") {
 			secondstring = RemoveFromArray(secondstring, len(secondstring)) //remove barcode
+			if dualBarcode(secondstring[len(secondstring)-1]) {
+				secondstring = RemoveFromArray(secondstring, len(secondstring)) //remove dual barcode
+			}
 		} else {
 			logs = logs + "#Wrong samplename: NO CHG ID IN THE RAW SAMPLENAME: " + filename + " \n"
 		}
 		rawstring[2] = strings.Join(secondstring, "-")
 	case remove == 5:
-		rawstring = RemoveFromArray(rawstring, 4)
+		rawstring = RemoveFromArray(rawstring, 4) //remove LaneID
 
 	case remove == 0:
 		//remove all cloudhealth genomics sampleinfo
-		secondstring := strings.Split(rawstring[2], "-")
 		newstring := secondstring[1:(len(secondstring) - 1)] //remove CHG ID and barcode info
 		new := strings.Join(newstring, "-")
 		result := new + "_" + rawstring[3] + "_" + rawstring[4]
 		result = path.Join(dir, result) //rename the file in the original dir
 		return result, logs
+
+	case remove == 12:
+		secondstring = RemoveFromArray(secondstring, 1) //remove CHG ID
+		secondstring = RemoveFromArray(secondstring, 1) //remove Lib ID
+		rawstring[2] = strings.Join(secondstring, "-")
+	case remove == 14:
+		secondstring = RemoveFromArray(secondstring, 1)                 //remove CHG ID
+		secondstring = RemoveFromArray(secondstring, len(secondstring)) //remove barcode
+		if dualBarcode(secondstring[len(secondstring)-1]) {
+			secondstring = RemoveFromArray(secondstring, len(secondstring)) //remove dual barcode
+		}
+		rawstring[2] = strings.Join(secondstring, "-")
+	case remove == 124:
+		secondstring = RemoveFromArray(secondstring, 1)                 //remove CHG ID
+		secondstring = RemoveFromArray(secondstring, 1)                 //remove Lib ID
+		secondstring = RemoveFromArray(secondstring, len(secondstring)) //remove barcode
+		if dualBarcode(secondstring[len(secondstring)-1]) {
+			secondstring = RemoveFromArray(secondstring, len(secondstring)) //remove dual barcode
+		}
+		rawstring[2] = strings.Join(secondstring, "-")
 	}
 	result = path.Join(dir, strings.Join(rawstring, "_"))
 	return result, logs
+}
+
+func dualBarcode(text string) bool {
+	barcoderegexp := regexp.MustCompile("[ATGC]+")
+	result := barcoderegexp.FindString(text)
+	if result != "" {
+		return true
+	}
+	return false
 }
 
 func writeLogs(logs string, logsfile string) {

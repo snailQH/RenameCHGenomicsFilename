@@ -13,6 +13,7 @@ Some custumors do not want to get the fastq file in this style names. Some donot
 
 So `RenameCHGenomicsFilename` is created.`RenameCHGenomicsFilename` is a `golang` based app.
 
+- - -
 
 ###Usage
 `RenameCHGenomicsFilename` can be run in both windows/linux OS, or anyother platforms which `golang` support.
@@ -20,20 +21,27 @@ So `RenameCHGenomicsFilename` is created.`RenameCHGenomicsFilename` is a `golang
 ```-dir``` : set the directory of the fastq files
 
 ```-marker``` : specify the element you want to remove from the filename
-<pre><code>
-&#8195;&#8195;&#8195;&#8195;0: remove RunID, flowcellID, CHGID, and barcode Info
+<pre><code>&#8195;&#8195;&#8195;&#8195;0: remove RunID,machineID, flowcellID, CHGID, and barcode Info
 &#8195;&#8195;&#8195;&#8195;1: remove CHGID
 &#8195;&#8195;&#8195;&#8195;2: remove LibName
 &#8195;&#8195;&#8195;&#8195;3: remove SampleName
 &#8195;&#8195;&#8195;&#8195;4: remove Barcode
 &#8195;&#8195;&#8195;&#8195;5: remove LaneId
+
+&#8195;&#8195;&#8195;&#8195;12: remove CHGID & LibName
+&#8195;&#8195;&#8195;&#8195;14: remove CHGID & Barcode
+&#8195;&#8195;&#8195;&#8195;124: remove CHGID & LibName & Barcode
 </code></pre>
 
 ##### Download
-```git clone https://github.com/snailQH/RenameCHGenomicsFilename.git && cd RenameCHGenomicsFilename```
+<pre><code>git clone https://github.com/snailQH/RenameCHGenomicsFilename.git
+cd RenameCHGenomicsFilename
+chmod 777 RenameCHGenomicsFilename
+</code></pre>
 
 ##### 1. run the app from source code:
-<pre><code>go run main.go -dir /online/projects/C170001-P001 -marker 5 //remove the LaneId from filename[/online/projects/C170001-P001]
+You need to install golang before run from the source code.
+<pre><code>go run main.go -dir /online/projects/C170001-P001 -marker 5 #remove the LaneId from filename[/online/projects/C170001-P001]
 </code></pre>
 
 ##### 2. run the app in linux os:
@@ -50,4 +58,5 @@ You can remove the barcode from all the `*.fastq.gz`files in the current and sub
 ./RenameCHGenomicsFilename	//in linux os
 </code></pre>
 
+Warning: Run the `RenameCHGenomicsFilename` can rename all the `*fastq.gz` files who have he same name pattern with the CHG `*fastq.gz` files which may affect the irrelevant files.
 
