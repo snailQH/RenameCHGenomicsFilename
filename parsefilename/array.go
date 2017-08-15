@@ -9,6 +9,7 @@ import (
 func RemoveFromArray(array []string, index int) []string {
 	var newarray []string
 	//index : 1~len(array)
+	//SXXX _ XXB _ CHG000000-LIBNAME-SAMPLENAME-CCGGTTAA _ L00X _ R1.fastq.gz
 	if index <= 0 {
 		fmt.Println("out of range")
 		os.Exit(1)
