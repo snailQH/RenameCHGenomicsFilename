@@ -1,13 +1,65 @@
-package parsefilename
+package utils
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
 	"strings"
-	"time"
+
+	"github.com/spf13/cobra"
 )
+
+var marker int
+var dir string
+
+var renameCmd = &cobra.Command{
+	Use:   "rename",
+	Short: "rename is used for rename fastq file(s) to user specified stype",
+	Long: `rename is used for rename fastq file(s) to user specified stype, avaliable Parameters: 
+	(1)-marker :the region you want to remove from the samplenames[default:"4"]
+		0: remove RunId,flowcellID,CHGID,Barcode
+		1: remove CHGID
+		2: remove LibName
+		3: remove SampleName
+		4: remove Barcode
+		5: remove LaneId
+		12: remove CHGID & LibName
+		14: remove CHGID & Barcode
+		124: remove CHGID & LibName & Barcode
+	(2)-dir :directory of the fastq files. eg: /online/projects/C150001-P001 [default:"./",means current dir,for linux OS]
+	Any problem please contact  Qinghui Li  via liqh@cloudhealth99.com
+	
+	`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		//for rename module will do the action of rename file in the current dir, so no extra command checking
+		//no extra parameters allowed,check the marker value,whether the dir exist
+		if len(args) != 0 || !PathExist(dir) || !(marker == 1 || marker == 2 || marker == 3 || marker == 4 || marker == 5 || marker == 12 || marker == 14 || marker == 124) {
+			if len(args) != 0 {
+				fmt.Println("#No extra parameters allowed. Please re-check your input.")
+			}
+
+			if !PathExist(dir) {
+				fmt.Printf("#Cannot find dir: %s. Please re-check your input.\n", dir)
+			}
+
+			if !(marker == 1 || marker == 2 || marker == 3 || marker == 4 || marker == 5 || marker == 12 || marker == 14 || marker == 124) {
+				fmt.Printf("#Wrong marker input :  %d. Please re-check your input.\n", marker)
+			}
+
+			cmd.Help()
+			return
+		}
+		ReName(ListFile(dir), marker) //do rename file here
+	},
+}
+
+func init() {
+	renameCmd.Flags().IntVarP(&marker, "marker", "m", 4, "specify a marker to remove from filename[0/1/2/3/4/5/12/14/124]:chg id/original lib name/original samplename/barcode/lane id/CHGID & LibName/CHGID & Barcode/CHGID & LibName & Barcode")
+	renameCmd.Flags().StringVarP(&dir, "dir", "d", "./", "specify a (relative/abs) path to fastq files")
+}
 
 func compileName(filename string, remove int, logs string) (string, string) {
 	var result string
@@ -90,53 +142,37 @@ func dualBarcode(text string) bool {
 	return false
 }
 
-func writeLogs(logs string, logsfile string) {
-	fo, _ := os.Create(logsfile)
-	defer fo.Close()
-	fo.WriteString(logs)
-}
-
-func getTime(logs string, logsfile string) (string, string) {
-	timestamp := time.Now().Unix()
-	tm := time.Unix(timestamp, 0)
-	x := tm.Format("2006-01-02  Mon 03:04:05 PM MST")
-	logs = x + "\n\n"
-	x = tm.Format("2006-01-02 03:04:05")
-	x = strings.Replace(x, " ", "", -1)
-	x = strings.Replace(x, ":", "", -1)
-	x = strings.Replace(x, "-", "", -1)
-	logsfile = "RenameCHGenomicsFilename-" + x + ".log"
-	return logs, logsfile
-}
-
 //ReName is design for compile the fastq filename
 func ReName(filename []string, remove int) {
 	checkfile := make(map[string]string)
-	var logs, logsfile string
-	logs, logsfile = getTime(logs, logsfile)
+	var renameLogs logstype
+	renameLogs.getTime()
+	var logs = renameLogs.Content
+	//var logs, logsfile string
+	//logs, logsfile = getTime(logs, logsfile)
 
 	for _, rawname := range filename {
 		newname, logs := compileName(rawname, remove, logs)
 		checkfile[rawname] = newname
-		logs = logs + ""
+		renameLogs.Content = logs + ""
 	}
 
 	for raw, new := range checkfile {
 		if raw == new {
-			logs = logs + "#Wrong format file: " + raw + "\n"
+			renameLogs.Content = renameLogs.Content + "#Wrong format file: " + raw + "\n"
 			continue
 		} else if checkfile[new] != "" {
-			logs = logs + "#Duplicate filename in renaming: " + raw + "\n"
+			renameLogs.Content = renameLogs.Content + "#Duplicate filename in renaming: " + raw + "\n"
 			continue
 		} else if checkfile[raw] == "renamed" {
-			logs = logs + "#Duplicate filename in renaming: " + raw + "\n"
+			renameLogs.Content = renameLogs.Content + "#Duplicate filename in renaming: " + raw + "\n"
 			continue
 		}
-		logs = logs + ">#renaming " + raw + " > " + new + " ...\n"
+		renameLogs.Content = renameLogs.Content + ">#renaming " + raw + " > " + new + " ...\n"
 		os.Rename(raw, new)
 		checkfile[new] = "renamed"
 	}
-	writeLogs(logs, logsfile)
+	renameLogs.WriteLogs()
 }
 
 //ListFile is designed for list file in the dir
@@ -157,4 +193,13 @@ func ListFile(folder string) []string {
 		}
 	}
 	return filelist
+}
+
+//PathExist is for determine whether the file is exist
+func PathExist(path string) bool {
+	_, err := os.Stat(path)
+	if err != nil && os.IsNotExist(err) {
+		return false
+	}
+	return true
 }

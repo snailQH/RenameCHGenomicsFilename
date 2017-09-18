@@ -1,4 +1,4 @@
-package parsefilename
+package utils
 
 import (
 	"fmt"
