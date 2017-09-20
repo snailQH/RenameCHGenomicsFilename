@@ -18,7 +18,7 @@ type rebuildtype struct {
 	CustomerID string //customer id,means the re-build style
 }
 
-var customerid, projectid, dir string
+var customerid, projectid, projectdir string
 var projectstyle = regexp.MustCompile("[CVRUHX]\\d{6}")           //C150001
 var samplestyle = regexp.MustCompile("CHG\\d{6}")                 //CHG020000
 var filetype = regexp.MustCompile("S\\d{4}_\\d{2}[AB]_CHG\\d{6}") //S0618_01B_CHG026244-WHTRDRPEP00004838-WHRDMETmgpMAAAAAA-66-AGGTTAAC_L003_R1.fastq.gz
@@ -29,7 +29,7 @@ var rebuilddirCmd = &cobra.Command{
 	Long:  "re-build the structure of the delivering fastq files，including fq files,md5 files, dir name, et.al.",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 || !PathExist(dir) {
+		if len(args) != 0 || !PathExist(projectdir) {
 			if len(args) != 0 {
 				fmt.Println("#No extra parameters allowed. Please re-check your input.")
 			}
@@ -39,14 +39,14 @@ var rebuilddirCmd = &cobra.Command{
 			if !IsRightProjectID(projectid) {
 				fmt.Println("#Wrong ProjectID input. Please re-check your input.")
 			}
-			if !PathExist(dir) {
-				fmt.Printf("#Cannot find dir: %s. Please re-check your input.\n", dir)
+			if !PathExist(projectdir) {
+				fmt.Printf("#Cannot find projectdir: %s. Please re-check your input.\n", projectdir)
 			}
 			cmd.Help()
 			return
 		}
 		var rb rebuildtype
-		rb.FileDir = dir
+		rb.FileDir = projectdir
 		rb.ProjectID = projectid
 		rb.CustomerID = customerid
 		rb.ReBuild()
@@ -56,7 +56,7 @@ var rebuilddirCmd = &cobra.Command{
 func init() {
 	rebuilddirCmd.Flags().StringVarP(&customerid, "customerid", "c", "", `customer id , determined the style of fastq files structure. 
 		Please input the correct customerid, like: C150001,C150003`)
-	rebuilddirCmd.Flags().StringVarP(&dir, "dir", "d", "", `specify a (relative/abs) path to projectdir,like C150003-P999`)
+	rebuilddirCmd.Flags().StringVarP(&projectdir, "dir", "d", "", `specify a (relative/abs) path to projectdir,like C150003-P999`)
 	rebuilddirCmd.Flags().StringVarP(&projectid, "projectid", "p", "all", `projectid of the current delieverying`) //default rebuild all the project-dir in the specified dir
 }
 
