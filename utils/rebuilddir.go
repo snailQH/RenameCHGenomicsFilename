@@ -128,13 +128,20 @@ func (rb *rebuildtype) ReBuild() {
 		}
 		logs = rebuildbycustomid(rb.CustomerID, rawprojectdir, logs)
 	}
-
 	rebuildlogs.WriteLogs()
 }
 
 func findsublibname(filelist []string) string {
 	var libname, tmpname = "", "" //tmpname will record the current right string match all the samplenames
-	var subpattern = strings.Split(filelist[0], "-")
+	var subpattern []string
+	for _, file := range filelist {
+		if subpattern == nil && strings.Contains(file, "-") {
+			subpattern = strings.Split(filelist[0], "-")
+			break
+		}
+	}
+
+	//var subpattern = strings.Split(filelist[0], "-")
 	for a, b := range subpattern {
 		if a > 0 {
 			if libname == "" {
@@ -173,13 +180,28 @@ func rebuildbycustomid(customerid string, rawprojectdir string, logs string) str
 	if customerid == "C150003" {
 		newprojectdir := rawprojectdir + "-" + GetCurDate()
 		if PathExist(newprojectdir) {
-			if err := os.Remove(newprojectdir); err != nil {
+			if err := os.RemoveAll(newprojectdir); err != nil {
 				logs = logs + fmt.Sprintf("\n#error in remove exist newprojectdir %v", err)
 			}
 		}
+
 		os.Mkdir(newprojectdir, 0774) //mkdir for the new dirname,project level
 		rawdatadir := path.Join(newprojectdir, "Rawdata")
 		os.Mkdir(rawdatadir, 0774)
+
+		_, projectname := path.Split(rawprojectdir)
+		filemd5 := rawprojectdir + ".local.md5"
+		filecheckmd5 := rawprojectdir + "local.md5.check"
+		if !PathExist(filemd5) || !PathExist(filecheckmd5) {
+			logs = logs + fmt.Sprintf("\n#error,md5 file or md5.check file missing")
+		} else {
+			newfilemd5 := projectname + ".local.md5"
+			newfilecheckmd5 := projectname + "local.md5.check"
+			newfilemd5 = path.Join(newprojectdir, filemd5)
+			newfilecheckmd5 = path.Join(newprojectdir, filecheckmd5)
+			os.Rename(filemd5, newfilemd5)
+			os.Rename(filecheckmd5, newfilecheckmd5)
+		}
 
 		allsampledir := FindSubDir(rawprojectdir, samplestyle, true) //find sample dir in the raw project dir
 		for _, sampledir := range allsampledir {
@@ -198,7 +220,7 @@ func rebuildbycustomid(customerid string, rawprojectdir string, logs string) str
 				}
 			}
 		}
-		if err := os.Remove(rawprojectdir); err != nil {
+		if err := os.RemoveAll(rawprojectdir); err != nil {
 			logs = logs + fmt.Sprintf("#error in remove raw project dir %s\n", err)
 		}
 	}
