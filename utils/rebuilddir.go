@@ -107,7 +107,7 @@ func FindSubDir(folder string, style *regexp.Regexp, dir bool) []string {
 func GetCurDate() string {
 	timestamp := time.Now().Unix()
 	tm := time.Unix(timestamp, 0)
-	fmt.Println(tm)
+	//fmt.Println(tm)
 	x := tm.Format("2006-01-02")
 	x = strings.Replace(x, "-", "", -1)
 	return x
