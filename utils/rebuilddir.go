@@ -126,6 +126,17 @@ func (rb *rebuildtype) ReBuild() {
 				continue
 			}
 		}
+
+		if strings.Contains(rawprojectdir, "-") {
+			tmp := strings.Split(rawprojectdir, "-")
+			if len(tmp[(len(tmp)-1):len(tmp)]) == 8 { //the rebuilded dir
+				datereg := regexp.MustCompile("20\\d{2}[01]\\d[0123]\\d")
+				if datareg.MatchString(tmp[(len(tmp) - 1):len(tmp)]) {
+					continue
+				}
+			}
+		}
+
 		logs = rebuildbycustomid(rb.CustomerID, rawprojectdir, logs)
 	}
 	rebuildlogs.WriteLogs()
@@ -213,6 +224,7 @@ func rebuildbycustomid(customerid string, rawprojectdir string, logs string) str
 			os.Mkdir(libdir, 0774)
 			for _, file := range filelist {
 				newfile := path.Base(file)
+				file = path.Join(sampledir, file)
 				newfile = path.Join(libdir, newfile)
 				logs = logs + fmt.Sprintf("##Renaming file: %s %s \n", file, newfile)
 				if err := os.Rename(file, newfile); err != nil {
@@ -226,4 +238,5 @@ func rebuildbycustomid(customerid string, rawprojectdir string, logs string) str
 	}
 
 	return logs
+}
 }
