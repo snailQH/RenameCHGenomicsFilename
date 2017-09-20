@@ -114,7 +114,10 @@ func GetCurDate() string {
 
 //ReBuild will re-build the dir and file according to the customer's rules
 func (rb *rebuildtype) ReBuild() {
-	fmt.Println("##do the action of re-build file for ", rb.ProjectID, rb.FileDir)
+	var rebuildlogs logstype
+	rebuildlogs.getTime()
+	var logs = rebuildlogs.Content
+	logs = logs + fmt.Sprintf("\n##do the action of re-build file for %s %s\n", rb.ProjectID, rb.FileDir)
 	allprojectdir := FindSubDir(rb.FileDir, projectstyle, true) //get all the project dir in the input dir:rb.FileDir
 
 	for _, rawprojectdir := range allprojectdir {
@@ -123,10 +126,10 @@ func (rb *rebuildtype) ReBuild() {
 				continue
 			}
 		}
-
-		rebuildbycustomid(rb.CustomerID, rawprojectdir)
-
+		logs = rebuildbycustomid(rb.CustomerID, rawprojectdir, logs)
 	}
+
+	rebuildlogs.WriteLogs()
 }
 
 func findsublibname(filelist []string) string {
@@ -136,7 +139,6 @@ func findsublibname(filelist []string) string {
 		if a > 0 {
 			if libname == "" {
 				tmpname = subpattern[1]
-				//libname = tmpname
 			} else {
 				tmpname = libname + "-" + b
 			}
@@ -167,12 +169,12 @@ func checklibname(filelist []string, libname string, index int) bool {
 	return flag
 }
 
-func rebuildbycustomid(customerid string, rawprojectdir string) {
+func rebuildbycustomid(customerid string, rawprojectdir string, logs string) string {
 	if customerid == "C150003" {
 		newprojectdir := rawprojectdir + "-" + GetCurDate()
 		if PathExist(newprojectdir) {
 			if err := os.Remove(newprojectdir); err != nil {
-				fmt.Println("#error in remove exist newprojectdir", err)
+				logs = logs + fmt.Sprintf("\n#error in remove exist newprojectdir %v", err)
 			}
 		}
 		os.Mkdir(newprojectdir, 0774) //mkdir for the new dirname,project level
@@ -184,19 +186,22 @@ func rebuildbycustomid(customerid string, rawprojectdir string) {
 			sampledir = path.Join(rawprojectdir, sampledir)
 			filelist := FindSubDir(sampledir, filetype, false)
 			libname := findsublibname(filelist)
-			fmt.Println("##sampledir: ", sampledir, " -> matched libname : ", libname)
+			logs = logs + fmt.Sprintf("\n##sampledir: %s -> matched libname : %s\n", sampledir, libname)
 			libdir := path.Join(rawdatadir, libname)
 			os.Mkdir(libdir, 0774)
 			for _, file := range filelist {
 				newfile := path.Base(file)
 				newfile = path.Join(libdir, newfile)
-				fmt.Println("##", file, newfile)
-				/**
-				if err := os.Link(file, newfile); err != nil {
-					fmt.Println("#error in link rawfile to newfile", err)
+				logs = logs + fmt.Sprintf("##Renaming file: %s %s \n", file, newfile)
+				if err := os.Rename(file, newfile); err != nil {
+					logs = logs + fmt.Sprintf("#error in link rawfile to newfile %s \n", err)
 				}
-				*/
 			}
 		}
+		if err := os.Remove(rawprojectdir); err != nil {
+			logs = logs + fmt.Sprintf("#error in remove raw project dir %s\n", err)
+		}
 	}
+
+	return logs
 }
