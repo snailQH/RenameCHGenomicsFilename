@@ -20,9 +20,9 @@ type rebuildtype struct {
 
 var customerid, projectid, projectdir string
 var projectstyle = regexp.MustCompile("[CVRUHX]\\d{6}") //C150001
-//var samplestyle = regexp.MustCompile("CHG\\d{6}")                 //CHG020000,this pattern will omit the undetermined
-var samplestyle = regexp.MustCompile("S*fastq*gz")                //this will including the undetermined files
-var filetype = regexp.MustCompile("S\\d{4}_\\d{2}[AB]_CHG\\d{6}") //S0618_01B_CHG026244-WHTRDRPEP00004838-WHRDMETmgpMAAAAAA-66-AGGTTAAC_L003_R1.fastq.gz
+var samplestyle = regexp.MustCompile("CHG\\d{6}")       //CHG020000,this pattern will omit the undetermined
+//var filetype = regexp.MustCompile("S\\d{4}_\\d{2}[AB]_CHG\\d{6}") //S0618_01B_CHG026244-WHTRDRPEP00004838-WHRDMETmgpMAAAAAA-66-AGGTTAAC_L003_R1.fastq.gz
+var filetype = regexp.MustCompile("fastq") //this will including the undetermined files
 
 var rebuilddirCmd = &cobra.Command{
 	Use:   "rebuild",
@@ -148,7 +148,7 @@ func findsublibname(filelist []string) string {
 	var libname, tmpname = "", "" //tmpname will record the current right string match all the samplenames
 	var subpattern []string
 	for _, file := range filelist {
-		if subpattern == nil && strings.Contains(file, "-") {
+		if subpattern == nil && strings.Contains(file, "-") && !strings.Contains(file, "Undetermined") {
 			subpattern = strings.Split(filelist[0], "-")
 			break
 		}
@@ -179,6 +179,9 @@ func findsublibname(filelist []string) string {
 func checklibname(filelist []string, libname string, index int) bool {
 	var flag = true
 	for _, fastqfilename := range filelist {
+		if strings.Contains(fastqfilename, "Undetermined") || !strings.Contains(fastqfilename, "-") {
+			continue
+		}
 		var subpattern = strings.Split(fastqfilename, "-")
 		tmparray := subpattern[1:(index + 1)]
 		curname := strings.Join(tmparray, "-")
@@ -204,7 +207,7 @@ func rebuildbycustomid(customerid string, rawprojectdir string, logs string) str
 
 		_, projectname := path.Split(rawprojectdir)
 		filemd5 := rawprojectdir + ".local.md5"
-		filecheckmd5 := rawprojectdir + "local.md5.check"
+		filecheckmd5 := rawprojectdir + ".local.md5.check"
 		if !PathExist(filemd5) || !PathExist(filecheckmd5) {
 			logs = logs + fmt.Sprintf("\n#error,md5 file or md5.check file missing")
 		} else {
