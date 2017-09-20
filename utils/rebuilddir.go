@@ -19,8 +19,9 @@ type rebuildtype struct {
 }
 
 var customerid, projectid, projectdir string
-var projectstyle = regexp.MustCompile("[CVRUHX]\\d{6}")           //C150001
-var samplestyle = regexp.MustCompile("CHG\\d{6}")                 //CHG020000
+var projectstyle = regexp.MustCompile("[CVRUHX]\\d{6}") //C150001
+//var samplestyle = regexp.MustCompile("CHG\\d{6}")                 //CHG020000,this pattern will omit the undetermined
+var samplestyle = regexp.MustCompile("S*fastq*gz")                //this will including the undetermined files
 var filetype = regexp.MustCompile("S\\d{4}_\\d{2}[AB]_CHG\\d{6}") //S0618_01B_CHG026244-WHTRDRPEP00004838-WHRDMETmgpMAAAAAA-66-AGGTTAAC_L003_R1.fastq.gz
 
 var rebuilddirCmd = &cobra.Command{
@@ -139,6 +140,7 @@ func (rb *rebuildtype) ReBuild() {
 
 		logs = rebuildbycustomid(rb.CustomerID, rawprojectdir, logs)
 	}
+	rebuildlogs.Content = logs
 	rebuildlogs.WriteLogs()
 }
 
