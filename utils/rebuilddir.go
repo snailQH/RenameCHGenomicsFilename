@@ -129,9 +129,9 @@ func (rb *rebuildtype) ReBuild() {
 
 		if strings.Contains(rawprojectdir, "-") {
 			tmp := strings.Split(rawprojectdir, "-")
-			if len(tmp[(len(tmp)-1):len(tmp)]) == 8 { //the rebuilded dir
+			if len(tmp[len(tmp)-1]) == 8 { //the rebuilded dir
 				datereg := regexp.MustCompile("20\\d{2}[01]\\d[0123]\\d")
-				if datareg.MatchString(tmp[(len(tmp) - 1):len(tmp)]) {
+				if datereg.MatchString(tmp[len(tmp)-1]) {
 					continue
 				}
 			}
@@ -238,5 +238,4 @@ func rebuildbycustomid(customerid string, rawprojectdir string, logs string) str
 	}
 
 	return logs
-}
 }
