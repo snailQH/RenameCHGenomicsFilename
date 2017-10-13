@@ -54,7 +54,7 @@ Help information for `rename` module,by typing `RenameCHGenomicsFilename rename 
 ```bash
 rename is used for rename fastq file(s) to user specified stype, avaliable Parameters: 
         (1)-marker :the region you want to remove from the samplenames[default:"4"]
-                0: remove RunId,flowcellID,CHGID,Barcode
+                0: remove RunId,flowcellID,CHGID
                 1: remove CHGID
                 2: remove LibName
                 3: remove SampleName
