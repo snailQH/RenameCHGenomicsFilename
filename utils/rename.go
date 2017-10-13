@@ -19,7 +19,7 @@ var renameCmd = &cobra.Command{
 	Short: "rename is used for rename fastq file(s) to user specified stype",
 	Long: `rename is used for rename fastq file(s) to user specified stype, avaliable Parameters: 
 	(1)-marker :the region you want to remove from the samplenames[default:"4"]
-		0: remove RunId,flowcellID,CHGID,Barcode
+		0: remove RunId,flowcellID,CHGID
 		1: remove CHGID
 		2: remove LibName
 		3: remove SampleName
@@ -36,7 +36,7 @@ var renameCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		//for rename module will do the action of rename file in the current dir, so no extra command checking
 		//no extra parameters allowed,check the marker value,whether the dir exist
-		if len(args) != 0 || !PathExist(dir) || !(marker == 1 || marker == 2 || marker == 3 || marker == 4 || marker == 5 || marker == 12 || marker == 14 || marker == 124) {
+		if len(args) != 0 || !PathExist(dir) || !(marker == 0 || marker == 1 || marker == 2 || marker == 3 || marker == 4 || marker == 5 || marker == 12 || marker == 14 || marker == 124) {
 			if len(args) != 0 {
 				fmt.Println("#No extra parameters allowed. Please re-check your input.")
 			}
@@ -45,7 +45,7 @@ var renameCmd = &cobra.Command{
 				fmt.Printf("#Cannot find dir: %s. Please re-check your input.\n", dir)
 			}
 
-			if !(marker == 1 || marker == 2 || marker == 3 || marker == 4 || marker == 5 || marker == 12 || marker == 14 || marker == 124) {
+			if !(marker == 0 || marker == 1 || marker == 2 || marker == 3 || marker == 4 || marker == 5 || marker == 12 || marker == 14 || marker == 124) {
 				fmt.Printf("#Wrong marker input :  %d. Please re-check your input.\n", marker)
 			}
 
@@ -103,9 +103,12 @@ func compileName(filename string, remove int, logs string) (string, string) {
 
 	case remove == 0:
 		//remove all cloudhealth genomics sampleinfo
-		newstring := secondstring[1:(len(secondstring) - 1)] //remove CHG ID and barcode info
-		new := strings.Join(newstring, "-")
-		result := new + "_" + rawstring[3] + "_" + rawstring[4]
+		//newstring := secondstring[1:(len(secondstring) - 1)] //remove CHG ID and barcode info
+		//new := strings.Join(newstring, "-")
+		//result := new + "_" + rawstring[3] + "_" + rawstring[4]
+		newstring := strings.Split(name, "-")
+		newstring = newstring[1:len(newstring)]
+		result := strings.Join(newstring, "-")
 		result = path.Join(dir, result) //rename the file in the original dir
 		return result, logs
 
